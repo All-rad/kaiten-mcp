@@ -51,6 +51,7 @@ description: "Task list template for feature implementation"
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
+- [ ] T003a [P] Verify and set local development environment versions (Java/Node) with `sdkman` / `nvm` according to `docs/quickstart.md` or feature `quickstart.md` (ensure Java and Node versions match project requirements)
 
 ---
 
@@ -246,6 +247,6 @@ With multiple developers:
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing
-- Commit after each task or logical group
+- Commit after each task or logical group. When opening a Pull Request (PR), the PR **MUST** contain exactly one commit. If additional fixes are required after opening the PR, amend the existing commit using `git commit --amend` or use an interactive `git rebase` so the PR remains a single commit prior to merging. Do not create extra commits or open additional PRs for iterative fixes of the same change. Commit messages **MUST** be in English.
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence

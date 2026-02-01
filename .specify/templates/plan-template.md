@@ -33,6 +33,8 @@
 
 [Gates determined based on constitution file]
 
+**Additional Gate (Environment)**: Local development and test tool versions (Java, Node, npm, etc.) MUST be verified and set according to the project's documented versions (use `sdkman` for Java, `nvm` for Node). Required versions MUST be recorded in `docs/quickstart.md` or in the feature `quickstart.md` when a feature imposes special requirements.
+
 ## Project Structure
 
 ### Documentation (this feature)

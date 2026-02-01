@@ -1,0 +1,58 @@
+name: Enforce PR Commit Policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+jobs:
+  check_pr_commits:
+    name: Check PR commits and commit message language
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq git
+
+      - name: Check commit count in PR
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: |
+          commits=$(jq '.pull_request.commits' "$GITHUB_EVENT_PATH")
+          echo "PR commits: $commits"
+          if [ "$commits" -ne 1 ]; then
+            echo "ERROR: Pull Request must contain exactly one commit. Current commits: $commits"
+            echo "If you need to add fixes, amend the single commit (git commit --amend) or rebase interactively so the PR remains one commit before merging."
+            exit 1
+          fi
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch PR commits
+        run: |
+          echo "Fetching branch: ${GITHUB_HEAD_REF}"
+          git fetch origin ${GITHUB_HEAD_REF} --depth=50 || true
+
+      - name: Check commit message language (no Cyrillic)
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          # Get commit message for the last commit on the PR branch
+          if ! msg=$(git log --format=%B origin/${BRANCH} -n 1); then
+            echo "ERROR: Failed to retrieve commit message for origin/${BRANCH}."
+            echo "Ensure the PR branch is correctly fetched and available as origin/${BRANCH}."
+            exit 1
+          fi
+          echo "Commit message: $msg"
+          if echo "$msg" | grep -E "[а-яА-ЯёЁ]" >/dev/null 2>&1; then
+            echo "ERROR: Commit message contains Cyrillic characters. Commit messages MUST be in English."
+            echo "Please amend the commit message to use English before merging."
+            exit 1
+          fi
+
+      - name: Success
+        if: success()
+        run: echo "PR passes commit policy checks."
