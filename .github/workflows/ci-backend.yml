@@ -1,0 +1,123 @@
+name: CI Backend
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    name: Backend Unit Tests & Validation
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Run all backend unit tests
+        working-directory: ./backend
+        run: mvn clean test
+        env:
+          MAVEN_OPTS: "-Xmx512m"
+
+      - name: Build backend JAR
+        working-directory: ./backend
+        run: mvn -DskipTests package
+
+      - name: Verify JAR file created
+        run: |
+          JAR_FILE="backend/target/kaiten-mcp.jar"
+          if [ ! -f "$JAR_FILE" ]; then
+            echo "ERROR: JAR file not found: $JAR_FILE"
+            exit 1
+          fi
+          echo "✓ JAR file created: $(ls -lh $JAR_FILE | awk '{print $9, $5}')"
+
+      - name: Upload backend test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/
+
+      - name: Upload backend JAR
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-jar
+          path: backend/target/kaiten-mcp.jar
+
+  backend-integration:
+    runs-on: ubuntu-latest
+    name: Backend Integration Test
+    needs: backend-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Build backend
+        working-directory: ./backend
+        run: mvn -DskipTests clean package
+
+      - name: Start backend server
+        working-directory: ./backend
+        run: |
+          java -jar target/kaiten-mcp.jar > server.log 2>&1 &
+          sleep 3
+          if ! curl -s http://localhost:8080/hello/Test > /dev/null; then
+            echo "ERROR: Server failed to start"
+            cat server.log
+            exit 1
+          fi
+          echo "✓ Server started successfully"
+
+      - name: Test valid greeting endpoint
+        run: |
+          echo "Testing: GET /hello/World"
+          RESPONSE=$(curl -s http://localhost:8080/hello/World)
+          echo "Response: $RESPONSE"
+          if echo "$RESPONSE" | grep -q '"message":"Hello, World"'; then
+            echo "✓ Valid greeting test passed"
+          else
+            echo "✗ Valid greeting test failed"
+            exit 1
+          fi
+
+      - name: Test empty name validation (should return 400)
+        run: |
+          echo "Testing: GET /hello (empty name should fail)"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/hello)
+          if [ "$HTTP_CODE" = "400" ]; then
+            echo "✓ Empty name validation test passed (HTTP $HTTP_CODE)"
+          else
+            echo "✗ Empty name validation test failed (HTTP $HTTP_CODE, expected 400)"
+            exit 1
+          fi
+
+      - name: Test too-long name validation (should return 400)
+        run: |
+          echo "Testing: GET /hello/<long-name> (should fail with 400)"
+          LONG_NAME=$(python3 -c "print('a' * 300)")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/hello/$LONG_NAME")
+          if [ "$HTTP_CODE" = "400" ]; then
+            echo "✓ Too-long name validation test passed (HTTP $HTTP_CODE)"
+          else
+            echo "✗ Too-long name validation test failed (HTTP $HTTP_CODE, expected 400)"
+            exit 1
+          fi
+
+      - name: Upload server log
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-server-log
+          path: backend/server.log

@@ -1,0 +1,83 @@
+name: CI UI
+
+# TODO: Add scheduled builds (nightly)
+# TODO: Implement bundle size comparison between branches
+# TODO: Add Lighthouse performance testing
+# TODO: Consider adding security scanning (npm audit, OWASP)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ui-build:
+    runs-on: ubuntu-latest
+    name: UI Build & Validation
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'ui/package-lock.json'
+
+      - name: Install UI dependencies
+        working-directory: ./ui
+        run: npm install
+
+      - name: Run UI unit tests
+        working-directory: ./ui
+        run: npm test
+
+      - name: Build UI
+        working-directory: ./ui
+        run: npm run build
+
+      - name: Verify build artifacts
+        working-directory: ./ui
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "ERROR: dist/ directory not found"
+            exit 1
+          fi
+          
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found"
+            exit 1
+          fi
+          
+          if [ ! -d "dist/assets" ]; then
+            echo "ERROR: dist/assets/ directory not found"
+            exit 1
+          fi
+          
+          JS_FILES=$(find dist/assets -name "*.js" 2>/dev/null | wc -l)
+          
+          echo "✓ Build artifacts verified:"
+          echo "  - dist/index.html ($(wc -c < dist/index.html) bytes)"
+          echo "  - JavaScript files: $JS_FILES"
+          
+          if [ "$JS_FILES" -eq 0 ]; then
+            echo "ERROR: Missing JavaScript assets"
+            exit 1
+          fi
+
+      - name: Run smoke test for UI build
+        run: |
+          chmod +x tests/smoke/smoke-ui-build.sh
+          ./tests/smoke/smoke-ui-build.sh
+
+      - name: Upload UI build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ui-dist
+          path: ui/dist/
+
+      - name: Upload UI test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ui-test-results
+          path: ui/coverage/

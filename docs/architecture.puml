@@ -1,0 +1,92 @@
+@startuml Kaiten MCP Architecture
+
+!define AWSPUML https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v14.0/dist
+!include AWSPUML/common.puml
+
+skin rose
+
+title Kaiten MCP - System Architecture
+
+package "Client Layer" {
+  [Web Browser] as browser
+}
+
+package "Application Server" {
+  package "Backend Service" {
+    [Spring Boot App\n:8080] as backend
+    [HelloService] as service
+    [HelloController] as controller
+    [GlobalExceptionHandler] as exception_handler
+  }
+  
+  [Static Assets\n(React UI)] as static_ui
+}
+
+package "Data Storage" {
+  [Configuration] as config
+  [VERSION] as version
+}
+
+package "Build & Distribution" {
+  [build.sh\nOrchestrator] as build
+  [kaiten-mcp.zip] as package
+}
+
+browser --> backend: HTTP Requests\n/hello/{name}
+backend --> controller: Route Handler
+controller --> service: Validation & Logic
+service --> exception_handler: Error Handling
+backend --> static_ui: Serve UI Assets
+
+browser -.-> static_ui: Load React UI\nindex.html + JS
+
+static_ui -.-> browser: Render in DOM
+
+build --> backend: Compile
+build --> static_ui: Bundle
+build --> config: Assemble
+build --> package: Package & Archive
+
+package "Packaged Application" {
+  [out/kaiten-mcp/\nlib/kaiten-mcp.jar] as jar
+  [out/kaiten-mcp/\nstatic/] as packaged_ui
+  [out/kaiten-mcp/\nbin/start.sh] as start_script
+  [out/kaiten-mcp/\nbin/stop.sh] as stop_script
+  [out/kaiten-mcp/\nconfig/] as packaged_config
+}
+
+package --> jar
+package --> packaged_ui
+package --> start_script
+package --> stop_script
+package --> packaged_config
+
+package "Runtime Flow" {
+  note bottom of start_script
+    1. Unpacks JAR
+    2. Starts JVM
+    3. Initializes Spring Boot
+    4. Binds port 8080
+    5. Serves static UI
+  end note
+  
+  note bottom of stop_script
+    1. Graceful SIGTERM
+    2. 10s timeout
+    3. Force kill if needed
+    4. Cleanup PID file
+  end note
+}
+
+' API Flow Detail
+note right of controller
+  GET /hello/{name}
+  ---
+  Returns: {"message":"Hello, {name}"}
+  Validates:
+  - Name required
+  - Length ≤ 256 chars
+  - Returns 400 on error
+end note
+
+@enduml
