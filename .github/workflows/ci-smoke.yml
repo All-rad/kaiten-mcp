@@ -23,8 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: npm
-          cache-dependency-path: ui/package-lock.json
 
       - name: Build complete package
         run: ./build.sh --no-jre
@@ -81,8 +79,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: npm
-          cache-dependency-path: ui/package-lock.json
 
       - name: Build complete package (Windows)
         run: .\build.sh --no-jre
