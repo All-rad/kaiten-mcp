@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Kaiten Integration API (internal)
+  version: 0.1.0
+servers:
+  - url: /api
+paths:
+  /kaiten/connect:
+    post:
+      summary: Verify and save Kaiten credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orgUrl:
+                  type: string
+                  example: https://example.kaiten.ru
+                token:
+                  type: string
+                  example: 296a5709-99bc-49a7-96e0-c0a1b236091f
+      responses:
+        '200':
+          description: Credentials verified and profile saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    type: object
+        '401':
+          description: Unauthorized — invalid token
+        '400':
+          description: Bad request — invalid input
+  /kaiten/profile:
+    get:
+      summary: Return stored Kaiten profile if any
+      responses:
+        '200':
+          description: Stored profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    type: object
+        '404':
+          description: Not found — not connected
+  /kaiten/disconnect:
+    post:
+      summary: Remove stored Kaiten credentials
+      responses:
+        '204':
+          description: Credentials removed
+        '404':
+          description: Not found — nothing to remove
