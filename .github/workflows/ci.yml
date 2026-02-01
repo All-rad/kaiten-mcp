@@ -19,7 +19,7 @@ jobs:
       - name: Build backend (skip tests)
         run: mvn -f backend/pom.xml -DskipTests package
       - name: Upload backend JAR for downstream jobs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: backend/target/*.jar
@@ -35,7 +35,7 @@ jobs:
       - name: Install UI deps
         run: |
           cd ui
-          npm ci
+          npm install
       - name: Run UI unit tests
         run: |
           cd ui

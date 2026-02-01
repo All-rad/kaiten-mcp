@@ -20,8 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'ui/package-lock.json'
 
       - name: Install UI dependencies
         working-directory: ./ui
@@ -70,14 +68,14 @@ jobs:
           ./tests/smoke/smoke-ui-build.sh
 
       - name: Upload UI build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ui-dist
           path: ui/dist/
 
       - name: Upload UI test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ui-test-results
           path: ui/coverage/
