@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run backend tests
+        run: mvn -f backend/pom.xml test
+      - name: Build backend (skip tests)
+        run: mvn -f backend/pom.xml -DskipTests package
+      - name: Upload backend JAR for downstream jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/*.jar
+
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install UI deps
+        run: |
+          cd ui
+          npm install
+      - name: Run UI unit tests
+        run: |
+          cd ui
+          npm test --silent
+      - name: UI build
+        run: |
+          cd ui
+          npm run build --if-present

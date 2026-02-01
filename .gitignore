@@ -58,6 +58,7 @@ local.properties
 .recommenders
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+!backend/bin/
 
 # IDE - NetBeans
 /nbproject/private/
@@ -71,6 +72,23 @@ local.properties
 *.code-workspace
 .history/
 
+# Node / Vite
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+package-lock.json
+.env
+.env.local
+.env.*.local
+coverage/
+.cache/
+*.log
+
 # Agents working directories
 .agents/
 agents/
@@ -81,3 +99,13 @@ agent-workspace/
 .speckit/
 speckit/
 *.speckit
+
+# Accidental Maven repository artifacts (from local machine)
+H:\\all/
+H:\\all/**
+H:\\all\\.m2\\repo
+H:\\all\\.m2\\repo/**
+~/
+~/**
+.m2/
+**/.m2/**

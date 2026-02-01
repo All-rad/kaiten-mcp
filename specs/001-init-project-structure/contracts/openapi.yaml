@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Kaiten-MCP Hello API
+  version: 0.1.0
+  description: API для эндпоинта приветствия
+paths:
+  /hello/{name}:
+    get:
+      summary: Возвращает приветствие для указанного имени
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 256
+      responses:
+        '200':
+          description: Успешное приветствие
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Hello, Иван"
+        '400':
+          description: Невалидный запрос (например: слишком длинное имя или отсутствие сегмента `name` в пути)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "name missing"
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер (dev)

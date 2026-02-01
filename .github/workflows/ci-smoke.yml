@@ -1,0 +1,97 @@
+name: CI Smoke Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run smoke tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build complete package
+        run: ./build.sh --no-jre
+        shell: bash
+
+      - name: Run packaged smoke test
+        run: ./tests/smoke/smoke-package.sh
+        shell: bash
+
+      - name: Run backend smoke test
+        run: ./tests/smoke/smoke-backend.sh
+        shell: bash
+        continue-on-error: true
+
+      - name: Run UI build smoke test
+        run: ./tests/smoke/smoke-ui-build.sh
+        shell: bash
+
+      - name: Validate package integrity
+        run: ./scripts/integration-check.sh out/kaiten-mcp.zip
+        shell: bash
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-package
+          path: out/kaiten-mcp.zip
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            tests/smoke/
+            backend/target/surefire-reports/
+          retention-days: 7
+
+  smoke-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build complete package (Windows)
+        run: .\build.sh --no-jre
+        shell: bash
+
+      - name: Validate package integrity (Windows)
+        run: bash scripts/integration-check.sh out/kaiten-mcp.zip
+        shell: bash
+
+      - name: Upload build artifacts (Windows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-package-windows
+          path: out/kaiten-mcp.zip
+          retention-days: 7
