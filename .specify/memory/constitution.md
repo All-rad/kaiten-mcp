@@ -2,8 +2,9 @@
 ═══════════════════════════════════════════════════════════════════════════════
 SYNC IMPACT REPORT
 ═══════════════════════════════════════════════════════════════════════════════
-Version Change: Initial (template) → 1.0.0
+Version Change: 1.1.0 → 1.2.0
 Creation Date: 2026-01-31
+Last Amended: 2026-02-01
 
 Principles Defined:
   1. Скорость и Простота (Speed and Simplicity)
@@ -12,21 +13,25 @@ Principles Defined:
   4. Тестирование (Testing)
   5. Обработка Ошибок (Error Handling)
 
+Modified Sections:
+  - Технологический Стек: добавлена секция "Локальная среда разработки" с требованиями по `sdkman`/`nvm` и проверке версий
+  - Governance: ранее добавлена политика Pull Request / Commit-ов (один PR = один коммит)
+
 Sections Added:
-  - Технологический Стек (Technology Stack)
+  - Технологический Стек (Technology Stack) — обновлено
   - Структура Проекта (Project Structure)
   - Документация (Documentation)
   - Поведение ИИ (AI Behavior)
 
 Template Consistency Check:
-  ✅ plan-template.md - Constitution Check section references this constitution
+  ✅ plan-template.md - UPDATED to require local env version checks in Constitution Check
   ✅ spec-template.md - Requirements align with testing and documentation principles
-  ✅ tasks-template.md - Task structure supports independent testing as required
-  ✅ agent files - Language requirement (Russian for documentation) needs propagation
+  ✅ tasks-template.md - UPDATED to include setup task to verify and set local env versions
+  ✅ agent files - UPDATED to include PR policy and local environment guidance
 
 Follow-up Actions:
-  - Verify agent guidance files respect Russian language requirement for docs/logging
-  - Update quickstart or runtime guidance if needed for AI behavior principles
+  - Add CI/hook to check environment versions where feasible
+  - Verify agent guidance files respect Russian language requirement for docs/logging and PR policy
 
 ═══════════════════════════════════════════════════════════════════════════════
 -->
@@ -115,10 +120,22 @@ Follow-up Actions:
 - JUnit 5
 - Mockito
 
+## Локальная среда разработки (Local Development Environment)
+
+**MUST**:
+- Для настройки локальной Java среды использовать `sdkman` (https://sdkman.io/). Устанавливать и переключаться на версию Java, указанную в проекте.
+- Для настройки локальной JavaScript/Node среды использовать `nvm` (https://github.com/nvm-sh/nvm). Устанавливать и переключаться на версию Node, указанную в проекте.
+- Перед началом локальной разработки или тестирования **MUST** проверить версии инструментов (Java, Node, npm и т.д.) и при отклонении от версий, используемых в проекте, выставить нужные версии через `sdkman`/`nvm`.
+- Требуемые версии ДОЛЖНЫ быть задокументированы в `docs/quickstart.md` и при необходимости в `specs/[###-feature]/quickstart.md` для фич с особыми требованиями.
+
+**Обоснование**: Обеспечивает воспроизводимость сборки, уменьшает ошибки, связанные с окружением, и ускоряет процесс онбординга.
+
 **Доставка**:
 - Сборка в независимое приложение
 - Поставка в виде ZIP-архива
 - Должно запускаться на Windows и Linux кликом по исполняемому файлу/скрипту
+
+**Version**: 1.2.0 | **Ratified**: 2026-01-31 | **Last Amended**: 2026-02-01
 
 ## Структура Проекта (Project Structure)
 
@@ -174,9 +191,18 @@ Follow-up Actions:
 - MINOR версия: добавление новых принципов или существенное расширение секций
 - PATCH версия: уточнения формулировок, исправление опечаток, несемантические улучшения
 
+**Политика Pull Request и Commit-ов**:
+**MUST**:
+- Каждый Pull Request (PR) ДОЛЖЕН содержать ровно один коммит.
+- Commit messages ДОЛЖНЫ быть на английском языке.
+- Если после открытия PR требуется внести дополнительные фиксы, их ДОЛЖНО вносить через `git commit --amend` или интерактивный `git rebase` так, чтобы PR оставался одним коммитом до слияния.
+- НЕЛЬЗЯ добавлять дополнительные коммиты или создавать новые PR для последовательных фиксов одной и той же задачи.
+
+**Обоснование**: Сдерживает разрастание истории коммитов, упрощает ревью и откат изменений, соответствует принципу скорости и простоты.
+
 **Проверка соответствия**:
 - Все feature specifications должны включать проверку на соответствие принципам
 - При обосновании отклонений от принципов использовать Complexity Tracking таблицу в implementation plan
 - Используйте guidance в agent files для обеспечения соблюдения конституции в runtime
 
-**Version**: 1.0.0 | **Ratified**: 2026-01-31 | **Last Amended**: 2026-01-31
+**Version**: 1.2.0 | **Ratified**: 2026-01-31 | **Last Amended**: 2026-02-01
