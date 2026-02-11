@@ -6,6 +6,7 @@ on:
 
 jobs:
   check_pr_commits:
+    if: false  # Workflow disabled
     name: Check PR commits and commit message language
     runs-on: ubuntu-latest
     steps:

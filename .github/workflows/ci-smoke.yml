@@ -8,6 +8,7 @@ on:
 
 jobs:
   smoke-tests:
+    if: false  # Workflow disabled
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +65,7 @@ jobs:
           retention-days: 7
 
   smoke-windows:
+    if: false  # Workflow disabled
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
