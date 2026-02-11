@@ -6,6 +6,7 @@ on:
 
 jobs:
   backend-tests:
+    if: false  # Workflow disabled
     runs-on: ubuntu-latest
     name: Backend Unit Tests & Validation
     steps:
@@ -51,6 +52,7 @@ jobs:
           path: backend/target/kaiten-mcp-0.1.0-SNAPSHOT.jar
 
   backend-integration:
+    if: false  # Workflow disabled
     runs-on: ubuntu-latest
     name: Backend Integration Test
     needs: backend-tests

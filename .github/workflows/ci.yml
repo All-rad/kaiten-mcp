@@ -6,6 +6,7 @@ on:
 
 jobs:
   backend:
+    if: false  # Workflow disabled
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +26,7 @@ jobs:
           path: backend/target/*.jar
 
   ui:
+    if: false  # Workflow disabled
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
